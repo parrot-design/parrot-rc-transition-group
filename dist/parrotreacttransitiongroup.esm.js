@@ -1,4 +1,5 @@
 import React, { Children, isValidElement, cloneElement, useRef, useState, useCallback, useEffect, useMemo } from 'react';
+import { useStateCallback, useForkRef } from '@parrotjs/react-hooks';
 
 /**
  * @return 返回一个对象映射键到child
@@ -117,8 +118,8 @@ function getNextChildMapping(nextProps, prevChildMapping, onExited) {
     return children;
 }
 
-const TransitionGroup = (props, ref) => {
-    const { component: Component = 'div', children: childrenProp } = props;
+const TransitionGroup = React.forwardRef((props, ref) => {
+    const { component: Component = 'div' } = props;
     //是否挂载完毕
     const mounted = useRef(false);
     //是否是第一次渲染
@@ -146,7 +147,6 @@ const TransitionGroup = (props, ref) => {
         childProp.current = props.children;
     }, [props]);
     useEffect(() => {
-        mounted.current = true;
         if (firstRender.current) {
             setChildrenMapping(getInitialChildMapping(props, handleExited));
             firstRender.current = false;
@@ -156,10 +156,13 @@ const TransitionGroup = (props, ref) => {
                 return getNextChildMapping(props, prevChildrenMapping, handleExited);
             });
         }
+    }, [props]);
+    useEffect(() => {
+        mounted.current = true;
         return () => {
             mounted.current = false;
         };
-    }, [props]);
+    }, []);
     const children = useMemo(() => {
         return Object.values(childrenMapping);
     }, [childrenMapping]);
@@ -167,7 +170,137 @@ const TransitionGroup = (props, ref) => {
         return children;
     }
     return (React.createElement(Component, { ref: ref }, children));
-};
-var TransitionGroup$1 = React.forwardRef(TransitionGroup);
+});
+var TransitionGroup$1 = React.memo(TransitionGroup);
 
-export { TransitionGroup$1 as TransitionGroup };
+/*! *****************************************************************************
+Copyright (c) Microsoft Corporation.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
+
+function __rest(s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+}
+
+const UNMOUNTED = "unmounted";
+const EXITED = "exited";
+const ENTERING = "entering";
+const ENTERED = "entered";
+const EXITING = "exiting";
+function noop() { }
+const Transition = React.forwardRef((props, ref) => {
+    const { visible: visibleProp = false, children, appear = false, disappear = false, unmountOnExit = false, mountOnEnter = false, timeout, onEnter = noop, onEntering = noop, onEntered = noop, onExit = noop, onExiting = noop, onExited = noop } = props, childProps = __rest(props, ["visible", "children", "appear", "disappear", "unmountOnExit", "mountOnEnter", "timeout", "onEnter", "onEntering", "onEntered", "onExit", "onExiting", "onExited"]);
+    const nodeRef = useRef(null);
+    const initialStatus = useMemo(() => {
+        let initialStatus;
+        if (visibleProp) {
+            if (appear) {
+                initialStatus = EXITED;
+            }
+            else {
+                initialStatus = ENTERED;
+            }
+        }
+        else {
+            if (disappear) {
+                initialStatus = ENTERED;
+            }
+            else {
+                if (unmountOnExit || mountOnEnter) {
+                    initialStatus = UNMOUNTED;
+                }
+                else {
+                    initialStatus = EXITED;
+                }
+            }
+        }
+        return initialStatus;
+    }, []);
+    const getTimeout = useCallback(() => {
+        let enter, exit;
+        if (typeof timeout === "number") {
+            enter = exit = timeout;
+        }
+        else if (typeof timeout === "object") {
+            enter = timeout && timeout.enter ? timeout.enter : 300;
+            exit = timeout && timeout.exit ? timeout.exit : 500;
+        }
+        return {
+            enter,
+            exit
+        };
+    }, [timeout]);
+    const [status, setStatus] = useStateCallback(initialStatus);
+    useEffect(() => {
+        //当visible由false变为true时 
+        if (visibleProp && (status === EXITED)) {
+            onEnter === null || onEnter === void 0 ? void 0 : onEnter(nodeRef.current);
+            setStatus(ENTERING, () => {
+                onEntering === null || onEntering === void 0 ? void 0 : onEntering(nodeRef.current);
+                setTimeout(() => {
+                    setStatus(ENTERED);
+                    onEntered === null || onEntered === void 0 ? void 0 : onEntered(nodeRef.current);
+                }, getTimeout().enter);
+            });
+            //当visible由true变为false时
+        }
+        else if (!visibleProp && status === ENTERED) {
+            onExit === null || onExit === void 0 ? void 0 : onExit(nodeRef.current);
+            setStatus(EXITING, () => {
+                onExiting === null || onExiting === void 0 ? void 0 : onExiting(nodeRef.current);
+                setTimeout(() => {
+                    setStatus(EXITED);
+                    onExited === null || onExited === void 0 ? void 0 : onExited(nodeRef.current);
+                }, getTimeout().exit);
+            });
+        }
+        else if (visibleProp && status === UNMOUNTED) {
+            setStatus(EXITED);
+        }
+        else if (!visibleProp && status === EXITED && unmountOnExit) {
+            setStatus(UNMOUNTED);
+        }
+    }, [visibleProp, status, getTimeout]);
+    const handleRef = useForkRef(nodeRef, ref);
+    const { TransitionComponent } = useMemo(() => {
+        if (status === UNMOUNTED) {
+            return {
+                TransitionComponent: null
+            };
+        }
+        let Component;
+        if (typeof children === "function") {
+            Component = children(status, childProps);
+        }
+        else {
+            Component = React.cloneElement(React.Children.only(children), childProps);
+        }
+        return {
+            TransitionComponent: Component
+        };
+    }, [status, childProps, children, handleRef]);
+    if (status === UNMOUNTED) {
+        return null;
+    }
+    return React.cloneElement(TransitionComponent, { ref: handleRef });
+});
+
+export { Transition, TransitionGroup$1 as TransitionGroup };
