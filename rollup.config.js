@@ -21,12 +21,13 @@ export default {
             name: 'ParrotRcTransitionGroup', // umd模块名称，相当于一个命名空间，会自动挂载到window下面
             sourcemap: false,
             globals:{
-                'react':'React'
+                'react':'React',
+                '@parrotjs/react-hooks':'ParrotRcHooks'
             },
             plugins: [terser()],
         },
     ],
-    external:['react'], 
+    external:['react','@parrotjs/react-hooks'], 
     plugins: [
         typescript({
             tsconfigOverride: {
