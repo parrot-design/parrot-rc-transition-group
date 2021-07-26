@@ -1,6 +1,6 @@
 {
   "name": "@parrotjs/react-transition-group",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "",
   "main": "dist/parrotreacttransitiongroup.cjs.js",
   "module": "dist/parrotreacttransitiongroup.esm.js",
@@ -49,5 +49,5 @@
   "peerDependencies": {
     "react": ">= 16.8",
     "@parrotjs/react-hooks": ">= 0.1.2"
-  } 
+  }
 }
