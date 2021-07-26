@@ -1,11 +1,11 @@
 {
   "name": "@parrotjs/react-transition-group",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "",
   "main": "dist/parrotreacttransitiongroup.cjs.js",
   "module": "dist/parrotreacttransitiongroup.esm.js",
-  "umd":"dist/parrotreacttransitiongroup.umd.js",
-  "umdName":"ParrotRcTransitionGroup",
+  "umd": "dist/parrotreacttransitiongroup.umd.js",
+  "umdName": "ParrotRcTransitionGroup",
   "types": "dist/types",
   "scripts": {
     "dev": "node examples/server.js",
@@ -25,7 +25,7 @@
   },
   "homepage": "https://github.com/parrot-design/parrot-mini-axios#readme",
   "dependencies": {
-    "react":"16.13.1"
+    "react": "16.13.1"
   },
   "devDependencies": {
     "@parrotjs/react-hooks": "^0.1.0",
@@ -50,7 +50,7 @@
     "webpack-hot-middleware": "^2.25.0"
   },
   "peerDependencies": {
-    "react":">= 16.8",
-    "@parrotjs/react-hooks":">= 0.1.2"
+    "react": ">= 16.8",
+    "@parrotjs/react-hooks": ">= 0.1.2"
   }
 }
