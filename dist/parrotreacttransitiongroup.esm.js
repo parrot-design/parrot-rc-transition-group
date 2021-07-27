@@ -279,7 +279,7 @@ const Transition = React.forwardRef((props, ref) => {
             setStatus(UNMOUNTED);
         }
     }, [visibleProp, status, getTimeout]);
-    const handleRef = useForkRef(nodeRef, ref);
+    const handleRef = useForkRef(nodeRef, ref, children.ref);
     const { TransitionComponent } = useMemo(() => {
         if (status === UNMOUNTED) {
             return {
@@ -296,7 +296,7 @@ const Transition = React.forwardRef((props, ref) => {
         return {
             TransitionComponent: Component
         };
-    }, [status, childProps, children, handleRef]);
+    }, [status, childProps, children]);
     if (status === UNMOUNTED) {
         return null;
     }
