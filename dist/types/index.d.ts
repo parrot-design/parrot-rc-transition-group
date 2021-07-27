@@ -20,3 +20,4 @@ export interface ITransitionProps {
     onExiting?: Function;
     onExited?: Function;
 }
+export declare type StatusType = 'unmounted' | 'exited' | 'entering' | 'entered' | 'exiting';
