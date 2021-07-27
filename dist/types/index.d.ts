@@ -1,6 +1,6 @@
 export { default as TransitionGroup } from './TransitionGroup';
 export { default as Transition } from './Transition';
-interface Timeout {
+export interface Timeout {
     appear?: number;
     exit?: number;
     enter?: number;
